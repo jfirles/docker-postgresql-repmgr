@@ -64,7 +64,7 @@ ADD files/postgres_bash_profile /opt/app/postgres_bash_profile
 RUN mkdir /var/www/html/postgresql
 ADD files/index_check_postgres.php /var/www/html/postgresql/index.php
 
-EXPOSE 80 6432
+EXPOSE 80 5432 6432
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 #CMD ["/bin/bash"]

@@ -1,6 +1,9 @@
 CLUSTER_HOST=192.168.33.34
 CLUSTER_NODE_NUMBER=1
 CLUSTER_NODE_NAME=pg1
-REPMGR_PASSWORD=pepe
+REPMGR_PASSWORD=repmgrpass
 CHECK_USER_USERNAME=checkuser
-CHECK_USER_PASSWORD=checkuser2019
+CHECK_USER_PASSWORD=checkuserpass
+NOTIFY_EMAIL=noc@mycompany.com
+FROM=pgdocker@mycompany.com
+SMTP_SERVER=mail.mycompany.com
