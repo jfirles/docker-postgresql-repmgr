@@ -30,6 +30,9 @@ RUN apt-get update && apt-get install -y postgresql-11 postgresql-11-partman \
 ## Añadimos el entrypoint
 ADD files/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
+## Añadimos el script para hacer switchover
+ADD files/repmgr_switchover.sh /usr/local/bin/repmgr_switchover.sh
+
 ## Borramos el cluster que crea debian por defecto
 RUN pg_dropcluster 11 main
 
