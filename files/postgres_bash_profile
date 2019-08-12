@@ -1,0 +1,4 @@
+## .bash_profile
+
+# alias para no tener que poner siempre el parámetro -f
+alias repmgr='repmgr -f /etc/repmgr/repmgr.conf'

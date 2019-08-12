@@ -1,0 +1,16 @@
+#!/bin/bash
+
+## cogemos los valores del Dockerfile
+PROJECT_NAME=$(cat Dockerfile | grep "com.siptize.project" | awk -F"\"" '{print $4}')
+APP_NAME=$(cat Dockerfile | grep "com.siptize.app" | awk -F"\"" '{print $4}')
+VERSION=$(cat Dockerfile | grep "LABEL version" | awk -F"\"" '{print $2}')
+
+### valores auto seteados
+IMAGE_NAME=$PROJECT_NAME-$APP_NAME
+CONTAINER_NAME=$PROJECT_NAME-$APP_NAME-pg2-devel
+
+SSH_KEYS_PATH="$(pwd)/ssh-key-sample"
+
+### ejecucion
+docker run --rm --name $CONTAINER_NAME --env-file docker_env_pg2.file --network oficina_net --ip 192.168.33.35 -v $SSH_KEYS_PATH:/opt/ssh_postgres -it siptize/$IMAGE_NAME:$VERSION
+

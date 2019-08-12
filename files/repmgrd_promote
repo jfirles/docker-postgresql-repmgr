@@ -1,0 +1,99 @@
+#!/bin/bash
+
+## fichero del repmgr
+REPMGR_FILE=/etc/repmgr/repmgrd.conf
+
+## fichero de config
+CONFIG_FILE=/etc/default/docker-postgresql
+
+## si hay fichero de config, lo incluimos
+if [ -f $CONFIG_FILE ];then
+	. $CONFIG_FILE
+fi
+
+##########################
+###### FUNCIONES
+##########################
+function send_email() {
+	NO_NOTITY="false"
+	## verificamos si hay variables para enviar email
+	if [ -z "$NOTIFY_EMAIL" ];then
+		## no notificamos
+		NO_NOTIFY="true"
+	fi
+	if [ -z "$SMTP_SERVER" ];then
+		## no notificamos
+		NO_NOTIFY="true"
+	fi
+	if [ -z "$FROM" ];then
+		## no notificamos
+		NO_NOTIFY="true"
+	fi
+	if [ "$NO_NOTIFY" == "true" ];then
+		rm $TMP_EMAIL_FILE
+		return
+	fi
+	## fichero temporal con el email
+	TMP_EMAIL_FILE=$(mktemp /tmp/repmgrd-notify-email.XXXXX)
+	## creamos el email
+	echo "From: $FROM" > $TMP_EMAIL_FILE
+	echo "To: $NOTIFY_EMAIL" >> $TMP_EMAIL_FILE
+	echo "Subject: $SUBJECT" >> $TMP_EMAIL_FILE
+	echo "Date: $(LANG=C date '+%a, %d %b %Y %H:%M:%S %z')"  >> $TMP_EMAIL_FILE
+	echo "" >> $TMP_EMAIL_FILE
+	echo "" >> $TMP_EMAIL_FILE
+	cat $EMAIL_BODY_FILE >> $TMP_EMAIL_FILE
+	## borramos el fichero
+	rm $EMAIL_BODY_FILE
+
+	## enviamos el email con curl
+	curl -s smtp://$SMTP_SERVER --mail-from $FROM --mail-rcpt $NOTIFY_EMAIL --upload-file $TMP_EMAIL_FILE
+	rm $TMP_EMAIL_FILE
+}
+
+## compruebo que soy el usuario postgres
+RUN_USER=$(whoami)
+
+if [ "$RUN_USER" != "postgres" ];then
+        echo
+        echo "ERROR: this command only can execute postgres user"
+        echo
+        exit 2
+fi
+
+## si no existe el fichero, salimos
+if [ ! -f $REPMGR_FILE ];then
+        echo
+        echo "ERROR: the file $REPMGR_FILE does not exists"
+        echo
+        exit 1
+fi
+
+## incluimos el fichero para tener las properties
+. $REPMGR_FILE
+
+
+MAIL_SUBJECT_START="[postgresql][$node_name]"
+
+## fecha ahora
+NOW=$(date)
+EMAIL_BODY_FILE=$(mktemp /tmp/repmgrd-notify-body.XXXXX)
+echo "Starting promote server $node_name at $NOW" > $EMAIL_BODY_FILE
+SUBJECT="$MAIL_SUBJECT_START promote start"
+send_email
+
+repmgr standby promote -f $REPMGR_FILE
+RET_VAL=$?
+
+EMAIL_BODY_FILE=$(mktemp /tmp/repmgrd-notify-body.XXXXX)
+if [ $RET_VAL -eq 0 ];then
+	SUBJECT="$MAIL_SUBJECT_START promote finished"
+        echo "Promoting server $node_name on cluster $NOW is executed" > $EMAIL_BODY_FILE
+	send_email
+        exit $RET_VAL
+else
+	SUBJECT="$MAIL_SUBJECT_START promote FAILED"
+        echo "Promoting server $node_name on cluster $cluster at $NOW FAILED" > $EMAIL_BODY_FILE
+	send_email
+        exit $RET_VAL
+fi
