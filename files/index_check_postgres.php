@@ -45,6 +45,12 @@ if($_GET['master'] == "true") {
 	} else {
         	http_response_code(200);
 	}
+} else if($_GET['master'] == "false" ) {
+	if($is_in_recovery == "t") {
+                http_response_code(200);
+        } else {
+                http_response_code(404);
+        }
 } else {
 	// es sólo ver si esta en marcha, esta, ok
         http_response_code(200);
