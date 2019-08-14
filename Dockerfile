@@ -4,8 +4,8 @@ LABEL maintainer="jfirles@siptize.com"
 LABEL "com.siptize.vendor"="Siptize S.L."
 LABEL "com.siptize.project"="common"
 LABEL "com.siptize.app"="postgres-repmgr"
-LABEL "com.siptize.version"="11.0.0"
-LABEL version="11.0.0"
+LABEL "com.siptize.version"="11.0.1"
+LABEL version="11.0.1"
 
 ENV PG_DATA /var/lib/postgresql/data
 
