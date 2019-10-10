@@ -4,8 +4,8 @@ LABEL maintainer="jfirles@siptize.com"
 LABEL "com.siptize.vendor"="Siptize S.L."
 LABEL "com.siptize.project"="common"
 LABEL "com.siptize.app"="postgres-repmgr"
-LABEL "com.siptize.version"="11.0.2"
-LABEL version="11.0.2"
+LABEL "com.siptize.version"="11.0.3"
+LABEL version="11.0.3"
 
 ENV PG_DATA /var/lib/postgresql/data
 
@@ -14,10 +14,17 @@ RUN echo "Europe/Madrid" > /etc/timezone
 RUN rm /etc/localtime && ln -s /usr/share/zoneinfo/Europe/Madrid /etc/localtime
 
 ## actualizamos e instalamos lo basico
-RUN apt-get update && apt-get dist-upgrade -y && apt-get install curl ca-certificates gnupg openssh-server rsync -y
+RUN apt-get update && apt-get dist-upgrade -y && apt-get install curl ca-certificates gnupg openssh-server rsync locales -y
+
+#RUN update-locale LANG=es_ES.UTF-8 LC_MESSAGES=POSIX && dpkg-reconfigure locales
 
 ## añadimos el repository key
 RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
+## Locales
+RUN echo "LANG=es_ES.UTF-8" > /etc/default/locale && echo "LC_MESSAGES=POSIX" >> /etc/default/locale \
+ && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && echo "es_ES.UTF-8 UTF-8" >> /etc/locale.gen \
+ && /usr/sbin/locale-gen
 
 ## Añadimos el repositorio
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list
